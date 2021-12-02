@@ -1,5 +1,6 @@
 const Form = require('../models/form');
 const FormStep = require('../models/form_step');
+const FormItem = require('../models/formItem');
 const utils = require('../helpers/utils');
 
 module.exports = {
@@ -106,6 +107,73 @@ module.exports = {
                 res.send({
                     "type": "success",
                     "data": newForm
+                });
+            }
+            
+        } catch (error) {
+
+            console.log(error);
+            res.send({
+                "type": "error",
+                "data": error
+            });
+        }
+
+
+        // console.log(username, password, firstName, lastName, birthDate);
+
+    },
+
+    createFormItem: async (req, res) => {
+
+        try {
+            let proceed = true;
+            const { formToken, stepToken, image, title, inputType } = req.body;
+            const { usertoken, sessiontoken } = req.headers;
+
+
+            if (await utils.authinticate(usertoken, sessiontoken) === false) {
+                proceed = false;
+                res.send({
+                    "type": "error",
+                    "data": {
+                        "msg": "Mismatched !"
+                    },
+                })
+            }
+
+            if(utils.inputTypes.includes(inputType) === false){
+                proceed = false;
+                res.send({
+                    "type": "error",
+                    "data": {
+                        "msg": "Input types error"
+                    },
+                })
+            }
+
+
+            if (proceed) {
+
+                let newFormItem = await FormItem.create({
+                    "token": utils.makeToken({
+                        "label": "F_ITEM_T"
+                    }),
+                    "formToken": formToken,
+                    "stepToken": stepToken,
+                    "image": image,
+                    "title": title,
+                    "inputType": inputType,
+                    "required": 1,
+                    "status": "Active",
+                    "existence": 1,
+                    "createdBy": usertoken,
+                    "sessionToken": sessiontoken,
+
+                });
+                res.send({
+                    "type": "success",
+                    "data": newFormItem
                 });
             }
             

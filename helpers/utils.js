@@ -30,29 +30,32 @@ const makeToken = (v) => {
     return token;
 }
 
+
 // @return UNIX milliseconds requires moment js - Author: Istiaq Hasan
 const unixMS = () => {
     return moment().format('x');
 }
 
 const authinticate = async (usertoken, sessiontoken) => {
-   try {
-    let checkSession = await Session.find(
-        { 
-        userToken: usertoken, 
-        sessionToken : sessiontoken,
-        sessionEndedAt: "hi"
-        }
-    )
+    try {
+        let checkSession = await Session.find(
+            {
+                userToken: usertoken,
+                sessionToken: sessiontoken,
+                sessionEndedAt: "hi"
+            }
+        )
 
-    if(checkSession.length === 1 ){
-        return true;
-    }else{
-        return false;
+        if (checkSession.length === 1) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.log(error);
     }
-   } catch (error) {
-       console.log(error);
-   }
 }
 
-module.exports = { numRand, stringRand, makeToken, unixMS, authinticate }
+const inputTypes = ["Short Text", "Long Text", "File", "Radio Button", "Checkbox"];
+
+module.exports = { numRand, stringRand, makeToken, unixMS, authinticate, inputTypes }
