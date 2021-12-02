@@ -1,4 +1,5 @@
 const express = require('express');
+const form_controller = require('./controllers/form_controller');
 const userController = require('./controllers/user_controller');
 const router = express.Router();
 
@@ -6,6 +7,8 @@ const router = express.Router();
 router.post('/account/create', userController.createAccount);
 
 router.post('/account/login', userController.login);
+
+router.post('/form/new', form_controller.createForm);
 
 // router.post('/account/post/create', post_controller.createPost);
 
