@@ -1,10 +1,11 @@
 const express = require('express');
+const userController = require('./controllers/user_controller');
 const router = express.Router();
 
 
-// router.post('/account/create', userController.createAccount);
+router.post('/account/create', userController.createAccount);
 
-// router.post('/account/login', userController.login);
+router.post('/account/login', userController.login);
 
 // router.post('/account/post/create', post_controller.createPost);
 
@@ -14,7 +15,7 @@ const router = express.Router();
 
 // router.post('/account/post/comment', post_controller.comment);
 
-// router.post('/account/logout', userController.logout);
+router.post('/account/logout', userController.logout);
 
 // router.post('/send/request', friendship_transaction_controller.sendFriendRequest);
 
