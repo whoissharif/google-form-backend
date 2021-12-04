@@ -131,7 +131,6 @@ module.exports = {
             const { formToken, stepToken, image, title, inputType } = req.body;
             const { usertoken, sessiontoken } = req.headers;
 
-
             if (await utils.authinticate(usertoken, sessiontoken) === false) {
                 proceed = false;
                 res.send({
@@ -187,6 +186,69 @@ module.exports = {
                 res.send({
                     "type": "success",
                     "data": newFormItem
+                });
+            }
+
+        } catch (error) {
+            console.log(error);
+            res.send({
+                "type": "error",
+                "data": error
+            });
+        }
+
+
+        // console.log(username, password, firstName, lastName, birthDate);
+
+    },
+
+    editForm: async (req, res) => {
+        try {
+            let proceed = true;
+            const { token, title, details } = req.body;
+            const { usertoken, sessiontoken } = req.headers;
+
+            if (await utils.authinticate(usertoken, sessiontoken) === false) {
+                proceed = false;
+                res.send({
+                    "type": "error",
+                    "data": {
+                        "msg": "Mismatched !"
+                    },
+                })
+            }
+
+            let checkFormWithUser = await Form.find({
+                "token": token,
+                "createdBy": usertoken,
+            });
+
+
+            if (checkFormWithUser.length !== 1) {
+                proceed = false;
+                res.send({
+                    type: "error",
+                    data: {
+                        message: "Oops! Not your form",
+                    },
+                });
+            }
+
+            if (proceed) {
+
+                updatedForm = await Form.findOneAndUpdate(
+                    { 'token': token },
+                    {
+                        $set: {
+                            'title': title,
+                            'details': details
+                        }
+                    },
+                    { new: true }
+                );
+                res.send({
+                    "type": "success",
+                    "data": updatedForm
                 });
             }
 

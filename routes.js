@@ -10,6 +10,8 @@ router.post('/account/login', userController.login);
 
 router.post('/form/new', form_controller.createForm);
 
+router.post('/form/edit', form_controller.editForm);
+
 router.post('/form/item/new', form_controller.createFormItem);
 
 // router.post('/account/post/create', post_controller.createPost);
