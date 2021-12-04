@@ -59,7 +59,7 @@ module.exports = {
                     }
                 });
             }
-            
+
         } catch (error) {
 
             console.log(error);
@@ -109,7 +109,7 @@ module.exports = {
                     "data": newForm
                 });
             }
-            
+
         } catch (error) {
 
             console.log(error);
@@ -142,7 +142,7 @@ module.exports = {
                 })
             }
 
-            if(utils.inputTypes.includes(inputType) === false){
+            if (utils.inputTypes.includes(inputType) === false) {
                 proceed = false;
                 res.send({
                     "type": "error",
@@ -152,9 +152,23 @@ module.exports = {
                 })
             }
 
+            let checkStepAndUser = await FormStep.find({
+                "token": stepToken,
+                "formToken": formToken,
+                "createdBy": usertoken,
+            });
+
+            if (checkStepAndUser.length !== 1) {
+                proceed = false;
+                res.send({
+                    type: "error",
+                    data: {
+                        message: "Oops! Invalid Input",
+                    },
+                });
+            }
 
             if (proceed) {
-
                 let newFormItem = await FormItem.create({
                     "token": utils.makeToken({
                         "label": "F_ITEM_T"
@@ -169,16 +183,14 @@ module.exports = {
                     "existence": 1,
                     "createdBy": usertoken,
                     "sessionToken": sessiontoken,
-
                 });
                 res.send({
                     "type": "success",
                     "data": newFormItem
                 });
             }
-            
-        } catch (error) {
 
+        } catch (error) {
             console.log(error);
             res.send({
                 "type": "error",
