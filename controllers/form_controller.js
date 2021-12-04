@@ -11,7 +11,6 @@ module.exports = {
             const { title, details } = req.body;
             const { usertoken, sessiontoken } = req.headers;
 
-
             if (await utils.authinticate(usertoken, sessiontoken) === false) {
                 proceed = false;
                 res.send({
@@ -61,25 +60,23 @@ module.exports = {
             }
 
         } catch (error) {
-
             console.log(error);
             res.send({
                 "type": "error",
                 "data": error
             });
         }
-
-
-        // console.log(username, password, firstName, lastName, birthDate);
-
     },
     createFormStep: async (req, res) => {
 
         try {
             let proceed = true;
-            const { title, details } = req.body;
+            const { formToken,title, details } = req.body;
             const { usertoken, sessiontoken } = req.headers;
 
+            let token = utils.makeToken({
+                "label": "CT"
+            });
 
             if (await utils.authinticate(usertoken, sessiontoken) === false) {
                 proceed = false;
@@ -91,41 +88,73 @@ module.exports = {
                 })
             }
 
+            let checkForm = await Form.find({
+                "token" : formToken,
+                "status" : "Active",
+                "existance" : 1
+            });
+
+            console.log(checkForm);
+
+            if(checkForm.length === 1){
+                let findPreviousStep = await FormStep.find({
+                    formToken : formToken,
+                    status : "Active",
+                    existence: 1
+                }).sort({"createdAt": "desc"}).limit(1).exec();
+            }
+
+            console.log(findPreviousStep);
+
+            if(findPreviousStep.length !== 1){
+                proceed = false;
+                res.send({
+                    "type": "error",
+                    "data": {
+                        "msg": "step error"
+                    },
+                })
+            }
+
+            // let updatePreviousStep = await FormStep.findOneAndUpdate(
+            //     {_id : findPreviousStep[0]._id},
+            //     {'$set': {nextStepToken : newFormStep.token}},{new : true}
+            // );
+
             if (proceed) {
-                let newForm = await Form.create({
-                    "token": utils.makeToken({
-                        "label": "CT"
-                    }),
+                
+                let newFormStep = await FormStep.create({
+                    "token": token,
+                    "formToken": formToken,
                     "title": title,
                     "details": details,
+                    "previousStepToken": "",
+                    "nextStepToken": "",
                     "status": "Active",
                     "existence": 1,
                     "createdBy": usertoken,
                     "sessionToken": sessiontoken,
-
                 });
+
+                
+
+                
                 res.send({
                     "type": "success",
-                    "data": newForm
+                    "data": newFormStep
                 });
             }
 
         } catch (error) {
-
             console.log(error);
             res.send({
                 "type": "error",
                 "data": error
             });
         }
-
-
-        // console.log(username, password, firstName, lastName, birthDate);
-
     },
 
     createFormItem: async (req, res) => {
-
         try {
             let proceed = true;
             const { formToken, stepToken, image, title, inputType } = req.body;
@@ -196,10 +225,6 @@ module.exports = {
                 "data": error
             });
         }
-
-
-        // console.log(username, password, firstName, lastName, birthDate);
-
     },
 
     editForm: async (req, res) => {
@@ -223,7 +248,6 @@ module.exports = {
                 "createdBy": usertoken,
             });
 
-
             if (checkFormWithUser.length !== 1) {
                 proceed = false;
                 res.send({
@@ -233,9 +257,7 @@ module.exports = {
                     },
                 });
             }
-
             if (proceed) {
-
                 updatedForm = await Form.findOneAndUpdate(
                     { 'token': token },
                     {
@@ -251,7 +273,6 @@ module.exports = {
                     "data": updatedForm
                 });
             }
-
         } catch (error) {
             console.log(error);
             res.send({
@@ -259,9 +280,5 @@ module.exports = {
                 "data": error
             });
         }
-
-
-        // console.log(username, password, firstName, lastName, birthDate);
-
     }
 }
