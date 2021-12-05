@@ -1,6 +1,7 @@
 const Form = require('../models/form');
 const FormStep = require('../models/form_step');
 const FormItem = require('../models/formItem');
+const ItemOption = require('../models/itemOption');
 const utils = require('../helpers/utils');
 
 module.exports = {
@@ -71,7 +72,7 @@ module.exports = {
 
         try {
             let proceed = true;
-            const { formToken,title, details } = req.body;
+            const { formToken, title, details } = req.body;
             const { usertoken, sessiontoken } = req.headers;
 
             let token = utils.makeToken({
@@ -89,24 +90,24 @@ module.exports = {
             }
 
             let checkForm = await Form.find({
-                "token" : formToken,
-                "status" : "Active",
-                "existance" : 1
+                "token": formToken,
+                "status": "Active",
+                "existance": 1
             });
 
             console.log(checkForm);
 
-            if(checkForm.length === 1){
+            if (checkForm.length === 1) {
                 let findPreviousStep = await FormStep.find({
-                    formToken : formToken,
-                    status : "Active",
+                    formToken: formToken,
+                    status: "Active",
                     existence: 1
-                }).sort({"createdAt": "desc"}).limit(1).exec();
+                }).sort({ "createdAt": "desc" }).limit(1).exec();
             }
 
-            console.log(findPreviousStep);
+            console.log(`previous step ---------- ${findPreviousStep}`);
 
-            if(findPreviousStep.length !== 1){
+            if (findPreviousStep.length !== 1) {
                 proceed = false;
                 res.send({
                     "type": "error",
@@ -122,7 +123,7 @@ module.exports = {
             // );
 
             if (proceed) {
-                
+
                 let newFormStep = await FormStep.create({
                     "token": token,
                     "formToken": formToken,
@@ -136,9 +137,9 @@ module.exports = {
                     "sessionToken": sessiontoken,
                 });
 
-                
 
-                
+
+
                 res.send({
                     "type": "success",
                     "data": newFormStep
@@ -271,6 +272,99 @@ module.exports = {
                 res.send({
                     "type": "success",
                     "data": updatedForm
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            res.send({
+                "type": "error",
+                "data": error
+            });
+        }
+    },
+
+    newOption: async (req, res) => {
+        try {
+            let proceed = true;
+            const { formToken, stepToken, itemToken, itemType, data } = req.body;
+            const { usertoken, sessiontoken } = req.headers;
+
+            if (await utils.authinticate(usertoken, sessiontoken) === false) {
+                proceed = false;
+                res.send({
+                    "type": "error",
+                    "data": {
+                        "msg": "auth failed !"
+                    },
+                })
+            }
+
+            let checkFormWithUser = await FormItem.find({
+                "token": itemToken,
+                "formToken": formToken,
+                "stepToken": stepToken,
+            });
+
+            if (checkFormWithUser.length !== 1) {
+                proceed = false;
+                res.send({
+                    type: "error",
+                    data: {
+                        message: "Oops! Not your form",
+                    },
+                });
+            }
+
+            let otherList = [];
+
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].titleType == "Others") {
+                    otherList.push(i);
+                }
+
+            }
+
+            if (otherList.length === 1) {
+                let lastIndex = data.length - 1;
+                if (otherList[0] !== lastIndex) {
+                    proceed = false;
+                    res.send({
+                        "type": "error",
+                        "data": "others not in last position"
+                    });
+                }
+            } else {
+                proceed = false;
+                res.send({
+                    "type": "error",
+                    "data": "multiple others error"
+                });
+            }
+
+
+
+            if (proceed) {
+                let newItemOption;
+                for (let i = 0; i < data.length; i++) {
+                    newItemOption = await ItemOption.create({
+                        "token": utils.makeToken({
+                            "label": "OPT_"
+                        }),
+                        "formToken": formToken,
+                        "stepToken": stepToken,
+                        "itemToken": itemToken,
+                        "title": data[i].title,
+                        "itemType": itemType,
+                        "titleType": data[i].titleType,
+                        "status": "Active",
+                        "existence": 1,
+                        "createdBy": usertoken,
+                        "sessionToken": sessiontoken,
+                    });
+                }
+                res.send({
+                    "type": "success",
+                    "data": newItemOption
                 });
             }
         } catch (error) {

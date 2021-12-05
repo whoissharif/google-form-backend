@@ -16,6 +16,8 @@ router.post('/form/item/new', form_controller.createFormItem);
 
 router.post('/form/step/new', form_controller.createFormStep);
 
+router.post('/form/item/option/new', form_controller.newOption);
+
 // router.post('/account/post/create', post_controller.createPost);
 
 // router.post('/account/post/react', post_controller.react);
