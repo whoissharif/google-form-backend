@@ -56,6 +56,6 @@ const authinticate = async (usertoken, sessiontoken) => {
     }
 }
 
-const inputTypes = ["Short Text", "Long Text", "File", "Radio", "Checkbox"];
+const inputTypes = ["ShortText", "LongText", "File", "Radio", "Checkbox"];
 
 module.exports = { numRand, stringRand, makeToken, unixMS, authinticate, inputTypes }

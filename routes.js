@@ -14,7 +14,7 @@ router.post('/form/edit', form_controller.editForm);
 
 router.post('/form/item/new', form_controller.createFormItem);
 
-router.post('/form/step/new', form_controller.createFormStep);
+router.get('/form/get/:formtoken/:steptoken', form_controller.getForm);
 
 router.post('/form/item/option/new', form_controller.newOption);
 

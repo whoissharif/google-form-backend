@@ -99,13 +99,13 @@ module.exports = {
             let findPreviousStep;
 
             if (checkForm.length === 1) {
-                 findPreviousStep = await FormStep.find({
+                findPreviousStep = await FormStep.find({
                     formToken: formToken,
                     status: "Active",
                     existence: 1
                 }).sort({ "createdAt": "desc" }).limit(1).exec();
             }
-            
+
             if (findPreviousStep.length !== 1) {
                 proceed = false;
                 res.send({
@@ -480,5 +480,92 @@ module.exports = {
                 "data": error
             });
         }
-    }
+    },
+
+    getForm: async (req, res) => {
+        try {
+            let proceed = true;
+            const { formtoken, steptoken } = req.params;
+
+            let results = [];
+
+            
+
+            // @checkStep
+            let checkstep = await FormStep.find({
+                "token": steptoken,
+                "formToken": formtoken,
+                'status' : "Active",
+                'existence' : 1
+
+            });
+
+            let stepObject = checkstep[0];
+
+            if(checkstep.length === 1) {
+
+                // @ get items
+
+                let items = await FormItem.find({
+                    'stepToken' : steptoken,
+                    'formToken' : formtoken,
+                    'status' : "Active",
+                    'existence' : 1
+                });
+
+                for(let i = 0; i < items.length; i++){
+                    let thisItem = items[i];
+
+                    let thisObject = {};
+
+                    
+
+                    // @get options if inputType "RadioButton", "Checkbox"
+
+                    if(thisItem.inputType === "Radio" || "Checkbox"){
+
+                        // @get options
+
+                        let options = await ItemOption.find({
+                            'formToken' : formtoken,
+                            'stepToken' : steptoken,
+                            'itemToken' : thisItem.token,
+                            'status' : "Active",
+                            'existence' : 1
+                        });
+
+                        thisObject.item = thisItem;
+                        thisObject.option = options;
+                        results.push(thisObject);
+
+
+                    }
+                    else{
+
+                        thisObject.item = thisItem;
+                        thisObject.option = [];
+                        results.push(thisObject);
+
+                    }
+                }
+
+
+
+
+            }
+            res.send({
+                type : "List Successfully Loaded",
+                step : stepObject,
+                data : results
+            })
+
+            
+        } catch (error) {
+            console.log(error);
+            res.send({
+                type: "error",
+                data: error
+            });
+        }
+    },
 }
