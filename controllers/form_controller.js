@@ -92,21 +92,20 @@ module.exports = {
             let checkForm = await Form.find({
                 "token": formToken,
                 "status": "Active",
-                "existance": 1
+                "existence": 1
             });
 
             console.log(checkForm);
+            let findPreviousStep;
 
             if (checkForm.length === 1) {
-                let findPreviousStep = await FormStep.find({
+                 findPreviousStep = await FormStep.find({
                     formToken: formToken,
                     status: "Active",
                     existence: 1
                 }).sort({ "createdAt": "desc" }).limit(1).exec();
             }
-
-            console.log(`previous step ---------- ${findPreviousStep}`);
-
+            
             if (findPreviousStep.length !== 1) {
                 proceed = false;
                 res.send({
@@ -129,13 +128,23 @@ module.exports = {
                     "formToken": formToken,
                     "title": title,
                     "details": details,
-                    "previousStepToken": "",
+                    "previousStepToken": findPreviousStep[0].token,
                     "nextStepToken": "",
                     "status": "Active",
                     "existence": 1,
                     "createdBy": usertoken,
                     "sessionToken": sessiontoken,
                 });
+
+                await FormStep.findOneAndUpdate(
+                    { "token": findPreviousStep[0].token },
+                    {
+                        $set: {
+                            "nextStepToken": token
+                        }
+                    },
+                    { new: true }
+                )
 
 
 
@@ -445,18 +454,18 @@ module.exports = {
                 let newItemOption;
                 for (let i = 0; i < data.length; i++) {
                     newItemOption = await FormItem.findOneAndUpdate(
-                        { 
+                        {
                             "token": data[i].itemToken,
                             "formToken": formToken,
                             "stepToken": stepToken,
                             "createdBy": usertoken,
-                         },
-                    {
-                        $set: {
-                            'positionKey': data[i].positionKey
-                        }
-                    },
-                    { new: true }
+                        },
+                        {
+                            $set: {
+                                'positionKey': data[i].positionKey
+                            }
+                        },
+                        { new: true }
                     )
                 }
                 res.send({
