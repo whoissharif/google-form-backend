@@ -23,6 +23,9 @@ const formItemSchema = mongoose.Schema({
     'required': {
         type: Number
     },
+    'positionKey': {
+        type: Number
+    },
 
     'status': {
         type: String

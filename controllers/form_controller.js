@@ -198,6 +198,10 @@ module.exports = {
             }
 
             if (proceed) {
+                let totalCount = await FormItem.find({
+                    "formToken": formToken,
+                    "stepToken": stepToken,
+                });
                 let newFormItem = await FormItem.create({
                     "token": utils.makeToken({
                         "label": "F_ITEM_T"
@@ -208,6 +212,7 @@ module.exports = {
                     "title": title,
                     "inputType": inputType,
                     "required": 1,
+                    "positionKey": totalCount.length + 1,
                     "status": "Active",
                     "existence": 1,
                     "createdBy": usertoken,
@@ -361,6 +366,98 @@ module.exports = {
                         "createdBy": usertoken,
                         "sessionToken": sessiontoken,
                     });
+                }
+                res.send({
+                    "type": "success",
+                    "data": newItemOption
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            res.send({
+                "type": "error",
+                "data": error
+            });
+        }
+    },
+
+    itemUpdate: async (req, res) => {
+        try {
+            let proceed = true;
+            const { formToken, stepToken, data } = req.body;
+            const { usertoken, sessiontoken } = req.headers;
+
+            if (await utils.authinticate(usertoken, sessiontoken) === false) {
+                proceed = false;
+                res.send({
+                    "type": "error",
+                    "data": {
+                        "msg": "auth failed !"
+                    },
+                })
+            }
+
+            // let checkFormWithUser = await FormItem.find({
+            //     "token": itemToken,
+            //     "formToken": formToken,
+            //     "stepToken": stepToken,
+            // });
+
+            // if (checkFormWithUser.length !== 1) {
+            //     proceed = false;
+            //     res.send({
+            //         type: "error",
+            //         data: {
+            //             message: "Oops! Not your form",
+            //         },
+            //     });
+            // }
+
+            // let otherList = [];
+
+            // for (let i = 0; i < data.length; i++) {
+            //     if (data[i].titleType == "Others") {
+            //         otherList.push(i);
+            //     }
+
+            // }
+
+            // if (otherList.length === 1) {
+            //     let lastIndex = data.length - 1;
+            //     if (otherList[0] !== lastIndex) {
+            //         proceed = false;
+            //         res.send({
+            //             "type": "error",
+            //             "data": "others not in last position"
+            //         });
+            //     }
+            // } else {
+            //     proceed = false;
+            //     res.send({
+            //         "type": "error",
+            //         "data": "multiple others error"
+            //     });
+            // }
+
+
+
+            if (proceed) {
+                let newItemOption;
+                for (let i = 0; i < data.length; i++) {
+                    newItemOption = await FormItem.findOneAndUpdate(
+                        { 
+                            "token": data[i].itemToken,
+                            "formToken": formToken,
+                            "stepToken": stepToken,
+                            "createdBy": usertoken,
+                         },
+                    {
+                        $set: {
+                            'positionKey': data[i].positionKey
+                        }
+                    },
+                    { new: true }
+                    )
                 }
                 res.send({
                     "type": "success",
